@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Recovery System</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://html2pdf.es.js.org/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border-left: 4px solid #0071e3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .subtitle {
+            color: #a0a0a0;
+            font-size: 14px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-export {
+            padding: 10px 20px;
+            background: #0071e3;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-export:hover {
+            background: #0066cc;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: #1a1f3a;
+            border: 1px solid #333;
+            color: #a0a0a0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: #0071e3;
+            color: #fff;
+            border-color: #0071e3;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Cards Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: #1a1f3a;
+            border: 1px solid #2a2f4a;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            border-color: #0071e3;
+            background: #1f2447;
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: #a0a0a0;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .card-subtext {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .positive { color: #34c759; }
+        .negative { color: #ff3b30; }
+        .warning { color: #ff9500; }
+
+        /* Progress Bar */
+        .progress-bar {
+            background: #0a0e27;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0071e3, #00d4ff);
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+
+        /* Tables */
+        .table-wrapper {
+            background: #1a1f3a;
+            border: 1px solid #2a2f4a;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            background: #0a0e27;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #0071e3;
+            border-bottom: 1px solid #2a2f4a;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #2a2f4a;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: #222844;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-critical {
+            background: #ff3b30;
+            color: #fff;
+        }
+
+        .status-warning {
+            background: #ff9500;
+            color: #fff;
+        }
+
+        .status-good {
+            background: #34c759;
+            color: #fff;
+        }
+
+        /* Charts */
+        .chart-container {
+            background: #1a1f3a;
+            border: 1px solid #2a2f4a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        canvas {
+            max-height: 400px;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-critical {
+            background: rgba(255, 59, 48, 0.1);
+            border-left: 3px solid #ff3b30;
+            color: #ff3b30;
+        }
+
+        .alert-warning {
+            background: rgba(255, 149, 0, 0.1);
+            border-left: 3px solid #ff9500;
+            color: #ff9500;
+        }
+
+        .alert-success {
+            background: rgba(52, 199, 89, 0.1);
+            border-left: 3px solid #34c759;
+            color: #34c759;
+        }
+
+        /* Milestone Timeline */
+        .milestone {
+            padding: 15px;
+            background: #0a0e27;
+            border-left: 3px solid #0071e3;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        .milestone-date {
+            font-size: 12px;
+            color: #0071e3;
+            font-weight: 600;
+        }
+
+        .milestone-text {
+            margin-top: 5px;
+            color: #e0e0e0;
+        }
+
+        .milestone.completed {
+            border-left-color: #34c759;
+            opacity: 0.7;
+        }
+
+        .milestone.upcoming {
+            border-left-color: #ff9500;
+        }
+
+        /* Input Elements */
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: #a0a0a0;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            background: #0a0e27;
+            border: 1px solid #2a2f4a;
+            color: #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #0071e3;
+            box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.1);
+        }
+
+        button.btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: #0071e3;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        button.btn-primary:hover {
+            background: #0066cc;
+        }
+
+        .recovery-roadmap {
+            list-style: none;
+        }
+
+        .recovery-roadmap li {
+            padding: 12px;
+            background: #0a0e27;
+            margin-bottom: 10px;
+            border-left: 3px solid #0071e3;
+            border-radius: 4px;
+        }
+
+        .recovery-roadmap li strong {
+            color: #0071e3;
+        }
+
+        h2 {
+            color: #fff;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        h3 {
+            color: #fff;
+            margin: 20px 0 15px 0;
+            font-size: 16px;
+        }
+
+        h4 {
+            color: #0071e3;
+            margin: 20px 0 10px 0;
+            font-size: 14px;
+        }
+
+        ol, ul {
+            margin-left: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                margin-top: 15px;
+                width: 100%;
+            }
+
+            .btn-export {
+                flex: 1;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .card-value {
+                font-size: 22px;
+            }
+
+            nav {
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+        }
+
+        @media print {
+            nav, .header-actions, .btn-export {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h1>💰 Financial Recovery System</h1>
+                <p class="subtitle">Professional-Grade Debt Recovery & Cash Flow Management</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-export" onclick="exportToPDF()">📥 Export to PDF</button>
+                <button class="btn-export" onclick="window.print()">🖨️ Print</button>
+            </div>
+        </header>
+
+        <nav>
+            <button class="nav-btn active" data-section="dashboard">Dashboard</button>
+            <button class="nav-btn" data-section="income">Income</button>
+            <button class="nav-btn" data-section="debts">Debts</button>
+            <button class="nav-btn" data-section="bills">Bills & Expenses</button>
+            <button class="nav-btn" data-section="paycheck">Paycheck Planner</button>
+            <button class="nav-btn" data-section="cashflow">Cash Flow</button>
+            <button class="nav-btn" data-section="forecast">Forecast</button>
+            <button class="nav-btn" data-section="settlement">Settlement</button>
+            <button class="nav-btn" data-section="roadmap">Recovery Roadmap</button>
+        </nav>
+
+        <!-- DASHBOARD SECTION -->
+        <section id="dashboard" class="section active">
+            <div class="alert alert-critical">
+                ⚠️ <strong>CRITICAL:</strong> PagIBIG Backlog of PHP 118,672.39 with foreclosure risk. This is priority #1. No payments to non-essential creditors until backlog is resolved.
+            </div>
+
+            <div class="grid">
+                <div class="card">
+                    <div class="card-title">Monthly Income</div>
+                    <div class="card-value positive">₱59,000</div>
+                    <div class="card-subtext">Salary + Rentals (Stable)</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Monthly Obligations</div>
+                    <div class="card-value negative">₱95,118</div>
+                    <div class="card-subtext">Income deficit: -₱36,118</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Total Debt</div>
+                    <div class="card-value negative">₱1,253,513</div>
+                    <div class="card-subtext">Credit Cards + Loans</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">PagIBIG Status</div>
+                    <div class="card-value warning">AT RISK</div>
+                    <div class="card-subtext">₱118,672 backlog</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Debt-to-Income Ratio</div>
+                    <div class="card-value negative">2,124%</div>
+                    <div class="card-subtext">Total Debt ÷ Monthly Income</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Settlement Savings</div>
+                    <div class="card-value positive">₱237,044</div>
+                    <div class="card-subtext">If both offers accepted</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Income vs Obligations (Monthly)</div>
+                <canvas id="incomeVsObligationsChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Debt Distribution</div>
+                <canvas id="debtDistributionChart"></canvas>
+            </div>
+        </section>
+
+        <!-- INCOME SECTION -->
+        <section id="income" class="section">
+            <h2>Income Sources</h2>
+            
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Source</th>
+                            <th>Monthly Amount</th>
+                            <th>Schedule</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Salary (Net)</td>
+                            <td>₱30,000</td>
+                            <td>15th & 30th</td>
+                            <td><span class="status-badge status-good">Stable</span></td>
+                        </tr>
+                        <tr>
+                            <td>Condo Rental</td>
+                            <td>₱15,000</td>
+                            <td>Monthly</td>
+                            <td><span class="status-badge status-good">Stable</span></td>
+                        </tr>
+                        <tr>
+                            <td>Parking Rental</td>
+                            <td>₱14,000</td>
+                            <td>Monthly</td>
+                            <td><span class="status-badge status-good">Stable</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="grid">
+                <div class="card">
+                    <div class="card-title">Total Monthly Income</div>
+                    <div class="card-value positive">₱59,000</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Income Stability</div>
+                    <div class="card-value">95%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 95%; background: #34c759;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 20px;">
+                <h3>⚠️ Income at Risk</h3>
+                <p style="color: #ff9500; margin-bottom: 10px;">If rental properties are taken in foreclosure, monthly income drops to ₱30,000 and debt cannot be managed.</p>
+                <p style="color: #a0a0a0; font-size: 12px;">Protection of PagIBIG and rental income is CRITICAL for any recovery plan.</p>
+            </div>
+        </section>
+
+        <!-- DEBTS SECTION -->
+        <section id="debts" class="section">
+            <h2>Debt Database</h2>
+
+            <div class="alert alert-critical">
+                <strong>Priority Order:</strong> PagIBIG (foreclosure risk) → Condo Dues → Critical Bills → Settlement Negotiations
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Creditor</th>
+                            <th>Balance</th>
+                            <th>Monthly Payment</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>PagIBIG (CRITICAL)</strong></td>
+                            <td>₱33,061 + ₱118,672 backlog</td>
+                            <td>₱33,061</td>
+                            <td><span class="status-badge status-critical">FORECLOSURE RISK</span></td>
+                            <td>Pay backlog immediately</td>
+                        </tr>
+                        <tr>
+                            <td><strong>BPI Credit Card</strong></td>
+                            <td>₱545,220</td>
+                            <td>2% + ₱850 late fee</td>
+                            <td><span class="status-badge status-critical">Collections</span></td>
+                            <td>Settlement: ₱336,700 (38% reduction)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>BDO Credit Card</strong></td>
+                            <td>₱125,713</td>
+                            <td>2% + ₱850 late fee</td>
+                            <td><span class="status-badge status-critical">Collections</span></td>
+                            <td>Settlement: ₱97,189 (23% reduction)</td>
+                        </tr>
+                        <tr>
+                            <td>BPI Loan 1</td>
+                            <td>₱5,966 remaining</td>
+                            <td>₱5,966</td>
+                            <td><span class="status-badge status-warning">Defaulted</span></td>
+                            <td>5 months left - Resume</td>
+                        </tr>
+                        <tr>
+                            <td>BPI Loan 2</td>
+                            <td>₱178,393 remaining</td>
+                            <td>₱7,756</td>
+                            <td><span class="status-badge status-warning">Defaulted</span></td>
+                            <td>23 months left - Resume</td>
+                        </tr>
+                        <tr>
+                            <td>Mother (Family)</td>
+                            <td>₱486,184</td>
+                            <td>0% interest</td>
+                            <td><span class="status-badge status-good">Flexible</span></td>
+                            <td>Priority after critical debts</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Other Obligations</th>
+                            <th>Balance</th>
+                            <th>Monthly</th>
+                            <th>Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Condo Dues (backlog)</td>
+                            <td>₱2,463 + ₱10,312 backlog</td>
+                            <td>₱2,464</td>
+                            <td><span class="status-badge status-critical">HIGH</span></td>
+                        </tr>
+                        <tr>
+                            <td>Globe Loan</td>
+                            <td>₱43,975</td>
+                            <td>₱5,497</td>
+                            <td><span class="status-badge status-warning">HIGH</span></td>
+                        </tr>
+                        <tr>
+                            <td>Globe Internet</td>
+                            <td>₱1,899 × 8 months</td>
+                            <td>₱1,899</td>
+                            <td><span class="status-badge status-good">Maintain</span></td>
+                        </tr>
+                        <tr>
+                            <td>Shopee PayLater</td>
+                            <td>₱28,213 total</td>
+                            <td>₱3,518-6,206</td>
+                            <td><span class="status-badge status-good">Maintain</span></td>
+                        </tr>
+                        <tr>
+                            <td>Atome</td>
+                            <td>₱6,130 total</td>
+                            <td>₱577-4,370</td>
+                            <td><span class="status-badge status-good">Maintain</span></td>
+                        </tr>
+                        <tr>
+                            <td>Kuya JP (Friend)</td>
+                            <td>₱90,450</td>
+                            <td>₱3,350</td>
+                            <td><span class="status-badge status-good">Maintain</span></td>
+                        </tr>
+                        <tr>
+                            <td>DITO</td>
+                            <td>₱3,376</td>
+                            <td>₱1,688</td>
+                            <td><span class="status-badge status-good">Maintain 2mo</span></td>
+                        </tr>
+                        <tr>
+                            <td>Pru Life (lapsed)</td>
+                            <td>₱24,000 backlog</td>
+                            <td>₱2,000</td>
+                            <td><span class="status-badge status-warning">After critical</span></td>
+                        </tr>
+                        <tr>
+                            <td>St Peter (Insurance)</td>
+                            <td>₱8,480 × 2/year</td>
+                            <td>₱1,414/month avg</td>
+                            <td><span class="status-badge status-good">Maintain</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- BILLS & EXPENSES -->
+        <section id="bills" class="section">
+            <h2>Living Expenses & Bills</h2>
+
+            <div class="grid">
+                <div class="card">
+                    <div class="card-title">Food</div>
+                    <div class="card-value">₱3,000</div>
+                    <div class="card-subtext">₱100/day × 30 days</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Transportation</div>
+                    <div class="card-value">₱1,260</div>
+                    <div class="card-subtext">₱60/working day × 21 days</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Medicine</div>
+                    <div class="card-value">₱500</div>
+                    <div class="card-subtext">Occasional</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Electricity</div>
+                    <div class="card-value">₱700</div>
+                    <div class="card-subtext">Average ₱400-1,000</div>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Expense Category</th>
+                            <th>Daily/Monthly</th>
+                            <th>Estimated Monthly</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Food</td>
+                            <td>₱100/day</td>
+                            <td>₱3,000</td>
+                        </tr>
+                        <tr>
+                            <td>Transportation</td>
+                            <td>₱60/workday</td>
+                            <td>₱1,260</td>
+                        </tr>
+                        <tr>
+                            <td>Medicine</td>
+                            <td>Occasional</td>
+                            <td>₱500</td>
+                        </tr>
+                        <tr>
+                            <td>Electricity</td>
+                            <td>Variable</td>
+                            <td>₱700</td>
+                        </tr>
+                        <tr style="background: #0a0e27;">
+                            <td><strong>Total Living Expenses</strong></td>
+                            <td></td>
+                            <td><strong>₱5,460</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- PAYCHECK PLANNER -->
+        <section id="paycheck" class="section">
+            <h2>Paycheck Planner</h2>
+
+            <div class="alert alert-success">
+                You receive salary twice monthly on the 15th and 30th. Plan your payments carefully around these dates.
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Paycheck</th>
+                            <th>Amount</th>
+                            <th>Receive Date</th>
+                            <th>Recommended Allocation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Paycheck 1</strong></td>
+                            <td>₱15,000</td>
+                            <td>15th of month</td>
+                            <td>
+                                ✓ ₱7,500 - PagIBIG<br/>
+                                ✓ ₱1,232 - Condo Dues<br/>
+                                ✓ ₱2,750 - Living Expenses<br/>
+                                ✓ ₱3,518 - Flexible Bills
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Paycheck 2</strong></td>
+                            <td>₱15,000</td>
+                            <td>30th of month</td>
+                            <td>
+                                ✓ ₱7,500 - PagIBIG<br/>
+                                ✓ ₱1,232 - Condo Dues<br/>
+                                ✓ ₱2,710 - Living Expenses<br/>
+                                ✓ ₱3,558 - Flexible Bills
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Condo Rental</strong></td>
+                            <td>₱15,000</td>
+                            <td>Monthly</td>
+                            <td>
+                                ✓ ₱5,497 - Globe Loan<br/>
+                                ✓ ₱3,350 - Kuya JP<br/>
+                                ✓ ₱3,518 - Flexible Bills<br/>
+                                ✓ ₱2,635 - Savings/Buffer
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Parking Rental</strong></td>
+                            <td>₱14,000</td>
+                            <td>Monthly</td>
+                            <td>
+                                ✓ ₱5,000 - PagIBIG Backlog Fund<br/>
+                                ✓ ₱3,000 - Settlement Savings<br/>
+                                ✓ ₱6,000 - Emergency Buffer
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card" style="margin-bottom: 20px;">
+                <h3>📅 Monthly Payment Calendar</h3>
+                <table style="font-size: 12px; width: 100%;">
+                    <tr>
+                        <td><strong>6th</strong> - Meralco (electricity)</td>
+                        <td><strong>7th</strong> - Globe Internet</td>
+                        <td><strong>8th</strong> - BPI Loan 1, Atome</td>
+                    </tr>
+                    <tr>
+                        <td><strong>11th</strong> - BPI Loan 2</td>
+                        <td><strong>15th</strong> - SALARY, PagIBIG, Condo Dues, Kuya JP</td>
+                        <td><strong>18th</strong> - PagIBIG (alt date)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>25th</strong> - DITO</td>
+                        <td><strong>29th</strong> - BPI CC, BDO CC</td>
+                        <td><strong>30th</strong> - SALARY</td>
+                    </tr>
+                </table>
+            </div>
+        </section>
+
+        <!-- CASH FLOW SECTION -->
+        <section id="cashflow" class="section">
+            <h2>Monthly Cash Flow Analysis</h2>
+
+            <div class="chart-container">
+                <div class="chart-title">Cash Flow Projection (Current Month)</div>
+                <canvas id="cashFlowChart"></canvas>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Amount</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: #0a0e27;">
+                            <td><strong>INCOME</strong></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Salary (Net)</td>
+                            <td>₱30,000</td>
+                            <td>Two installments: 15th & 30th</td>
+                        </tr>
+                        <tr>
+                            <td>Condo Rental</td>
+                            <td>₱15,000</td>
+                            <td>Stable income</td>
+                        </tr>
+                        <tr>
+                            <td>Parking Rental</td>
+                            <td>₱14,000</td>
+                            <td>Stable income</td>
+                        </tr>
+                        <tr style="background: #0a0e27;">
+                            <td><strong>TOTAL INCOME</strong></td>
+                            <td><strong style="color: #34c759;">₱59,000</strong></td>
+                            <td></td>
+                        </tr>
+                        <tr style="background: #0a0e27;">
+                            <td><strong>CRITICAL EXPENSES</strong></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Living Expenses</td>
+                            <td>₱5,460</td>
+                            <td>Food, transport, utilities</td>
+                        </tr>
+                        <tr>
+                            <td>PagIBIG (Current)</td>
+                            <td>₱33,061</td>
+                            <td>MUST NOT DEFAULT</td>
+                        </tr>
+                        <tr>
+                            <td>Condo Dues</td>
+                            <td>₱2,464</td>
+                            <td>MUST NOT DEFAULT (water risk)</td>
+                        </tr>
+                        <tr>
+                            <td>Globe Loan</td>
+                            <td>₱5,497</td>
+                            <td>MUST NOT DEFAULT</td>
+                        </tr>
+                        <tr>
+                            <td>Shopee PayLater</td>
+                            <td>₱6,206</td>
+                            <td>MUST NOT DEFAULT (varies)</td>
+                        </tr>
+                        <tr>
+                            <td>Atome</td>
+                            <td>₱4,370</td>
+                            <td>MUST NOT DEFAULT (varies)</td>
+                        </tr>
+                        <tr>
+                            <td>DITO</td>
+                            <td>₱1,688</td>
+                            <td>Phone service (2 months)</td>
+                        </tr>
+                        <tr>
+                            <td>Kuya JP</td>
+                            <td>₱3,350</td>
+                            <td>Friend/family</td>
+                        </tr>
+                        <tr>
+                            <td>Globe Internet</td>
+                            <td>₱1,899</td>
+                            <td>Necessary service</td>
+                        </tr>
+                        <tr>
+                            <td>St Peter Insurance</td>
+                            <td>₱1,414</td>
+                            <td>Average per month</td>
+                        </tr>
+                        <tr style="background: #0a0e27;">
+                            <td><strong>CRITICAL SUBTOTAL</strong></td>
+                            <td><strong style="color: #ff3b30;">₱65,609</strong></td>
+                            <td></td>
+                        </tr>
+                        <tr style="background: #0a0e27;">
+                            <td><strong>DEFICIT</strong></td>
+                            <td><strong style="color: #ff3b30;">-₱6,609</strong></td>
+                            <td><strong>NOT SUSTAINABLE</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="alert alert-critical">
+                <strong>⚠️ CRITICAL FINDING:</strong> Monthly obligations exceed income by ₱6,609. This deficit cannot be sustained indefinitely. Action items:
+                <ol style="margin-top: 10px;">
+                    <li style="margin-top: 5px;">Negotiate settlement on credit cards immediately (target: ₱336,700 + ₱97,189 = ₱433,889)</li>
+                    <li style="margin-top: 5px;">This would reduce monthly obligations by ₱15,000-20,000</li>
+                    <li style="margin-top: 5px;">Defer non-critical payments (BPI loans, Pru Life)</li>
+                    <li style="margin-top: 5px;">Protect rental income (PagIBIG and water must not be disconnected)</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- FORECAST SECTION -->
+        <section id="forecast" class="section">
+            <h2>36-Month Forecast</h2>
+
+            <div class="chart-container">
+                <div class="chart-title">Debt Reduction Projection (with settlements)</div>
+                <canvas id="debtForecastChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Payoff Timeline by Debt Category</div>
+                <canvas id="payoffTimelineChart"></canvas>
+            </div>
+
+            <div class="card" style="margin-bottom: 20px;">
+                <h3>Scenario: Aggressive Settlement Path</h3>
+                <p style="color: #a0a0a0; margin-bottom: 10px;">
+                    If settlements are achieved on credit cards and monthly obligations are reduced:
+                </p>
+                <ul style="color: #a0a0a0; font-size: 13px; margin-top: 10px;">
+                    <li>📊 <strong>Months 1-3:</strong> Accumulate ₱50,000 for PagIBIG backlog</li>
+                    <li>📊 <strong>Months 4-6:</strong> Clear PagIBIG backlog and condo dues</li>
+                    <li>📊 <strong>Months 7-12:</strong> Complete credit card settlements</li>
+                    <li>📊 <strong>Months 13-24:</strong> Aggressive payoff of smaller debts</li>
+                    <li>📊 <strong>Months 25-36:</strong> Begin building emergency fund</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- SETTLEMENT CALCULATOR -->
+        <section id="settlement" class="section">
+            <h2>Settlement Calculator & Negotiation Guide</h2>
+
+            <div class="alert alert-success">
+                ✓ Two major credit cards have offered settlements. These are MAJOR opportunities to reduce debt burden.
+            </div>
+
+            <div class="grid">
+                <div class="card">
+                    <div class="card-title">BPI Credit Card</div>
+                    <div class="input-group">
+                        <label>Current Balance</label>
+                        <input type="text" value="₱545,220" disabled>
+                    </div>
+                    <div class="input-group">
+                        <label>Settlement Offer</label>
+                        <input type="text" value="₱336,700" disabled style="color: #34c759;">
+                    </div>
+                    <div class="input-group">
+                        <label>Reduction</label>
+                        <input type="text" value="38.2% (Save ₱208,520)" disabled style="color: #34c759;">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">BDO Credit Card</div>
+                    <div class="input-group">
+                        <label>Current Balance</label>
+                        <input type="text" value="₱125,713" disabled>
+                    </div>
+                    <div class="input-group">
+                        <label>Settlement Offer</label>
+                        <input type="text" value="₱97,189" disabled style="color: #34c759;">
+                    </div>
+                    <div class="input-group">
+                        <label>Reduction</label>
+                        <input type="text" value="22.7% (Save ₱28,524)" disabled style="color: #34c759;">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Total Settlement Savings</div>
+                    <div style="font-size: 28px; font-weight: 600; color: #34c759; margin-top: 20px;">₱237,044</div>
+                    <div class="card-subtext" style="margin-top: 10px;">Reduction from ₱670,933 → ₱433,889</div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 20px;">
+                <h3>📋 How to Proceed with Settlements</h3>
+                <ol style="color: #a0a0a0; font-size: 13px; line-height: 1.8;">
+                    <li><strong>Gather funds first:</strong> Try to accumulate ₱434,000 (combined settlement offers)</li>
+                    <li><strong>Contact both creditors:</strong> Confirm settlement offers are still valid (they usually are)</li>
+                    <li><strong>Negotiate timeline:</strong> Request payment in 2-3 installments if needed</li>
+                    <li><strong>Get written confirmation:</strong> Before paying, get settlement agreement in writing</li>
+                    <li><strong>Pay via bank transfer:</strong> Keep evidence of payment</li>
+                    <li><strong>Verify closure:</strong> Confirm accounts are marked "settled" on credit bureau</li>
+                </ol>
+            </div>
+
+            <div class="card" style="margin-bottom: 20px;">
+                <h3>⚠️ Settlement Strategy Notes</h3>
+                <p style="color: #a0a0a0; font-size: 13px; line-height: 1.8; margin-bottom: 10px;">
+                    <strong>Current situation:</strong> Both accounts are in collections with law firms pursuing them.
+                </p>
+                <p style="color: #a0a0a0; font-size: 13px; line-height: 1.8; margin-bottom: 10px;">
+                    <strong>Why settle:</strong>
+                </p>
+                <ul style="color: #a0a0a0; font-size: 13px; margin-bottom: 10px;">
+                    <li>• Stops legal action and harassment</li>
+                    <li>• Saves ₱237,044 in principal</li>
+                    <li>• Reduces monthly cash flow pressure</li>
+                    <li>• Removes foreclosure risk from judgments</li>
+                </ul>
+                <p style="color: #a0a0a0; font-size: 13px; line-height: 1.8;">
+                    <strong>Recommended timeline:</strong> Accumulate settlement funds within 3-6 months, then execute both settlements simultaneously.
+                </p>
+            </div>
+        </section>
+
+        <!-- RECOVERY ROADMAP -->
+        <section id="roadmap" class="section">
+            <h2>Financial Recovery Roadmap</h2>
+
+            <div class="alert alert-critical">
+                Priority #1: Protect PagIBIG and prevent foreclosure
+            </div>
+
+            <div class="card" style="margin-bottom: 30px;">
+                <h3>🎯 The Master Plan (36 Months)</h3>
+                
+                <h4>PHASE 1: CRISIS STABILIZATION (Months 1-3)</h4>
+                <ul class="recovery-roadmap">
+                    <li><strong>Immediate:</strong> Halt legal escalation - confirm PagIBIG backlog payment plan</li>
+                    <li><strong>Week 1:</strong> Contact PagIBIG - explain situation and negotiate backlog payment schedule</li>
+                    <li><strong>Week 2:</strong> Contact condo association - explain situation and stop water disconnection</li>
+                    <li><strong>Week 3:</strong> Contact Globe and credit card creditors - confirm settlement offers in writing</li>
+                    <li><strong>Goal:</strong> Accumulate ₱50,000 by end of month 3 for PagIBIG backlog</li>
+                </ul>
+
+                <h4>PHASE 2: BACKLOG ELIMINATION (Months 4-6)</h4>
+                <ul class="recovery-roadmap">
+                    <li><strong>Month 4:</strong> Pay ₱50,000 PagIBIG backlog (removes foreclosure risk)</li>
+                    <li><strong>Month 5:</strong> Pay ₱10,312 condo dues backlog + ₱2,464 current month</li>
+                    <li><strong>Month 6:</strong> Begin PagIBIG regular payment recovery plan (₱33,061/month)</li>
+                    <li><strong>Goal:</strong> Secure property and utilities</li>
+                </ul>
+
+                <h4>PHASE 3: SETTLEMENT EXECUTION (Months 7-12)</h4>
+                <ul class="recovery-roadmap">
+                    <li><strong>Goal:</strong> Accumulate ₱434,000 for credit card settlements</li>
+                    <li><strong>Strategy:</strong> After PagIBIG backlog is paid, monthly surplus becomes ~₱13,000</li>
+                    <li><strong>Month 7-12:</strong> Save aggressively while maintaining critical bills</li>
+                    <li><strong>By Month 12:</strong> Execute both credit card settlements (₱336,700 + ₱97,189)</li>
+                    <li><strong>Result:</strong> Eliminate ₱670,933 debt for ₱433,889 payment (save ₱237,044!)</li>
+                </ul>
+
+                <h4>PHASE 4: DEBT CONSOLIDATION (Months 13-24)</h4>
+                <ul class="recovery-roadmap">
+                    <li><strong>Remaining debts:</strong> ₱819,624 (after settlements)</li>
+                    <li><strong>Month 13-18:</strong> Focus on BPI Loans (complete by month 18, saves ₱13,722/month)</li>
+                    <li><strong>Month 19-20:</strong> Complete DITO (₱3,376 total)</li>
+                    <li><strong>Month 21-24:</strong> Begin aggressive payoff of Mother's loan (₱486,184 interest-free)</li>
+                    <li><strong>Continue:</strong> Globe Loan, Kuya JP, Atome, Shopee PayLater, Pru Life backlog</li>
+                </ul>
+
+                <h4>PHASE 5: FULL RECOVERY (Months 25-36)</h4>
+                <ul class="recovery-roadmap">
+                    <li><strong>Focus:</strong> Complete Mother's loan and all remaining consumer debts</li>
+                    <li><strong>Month 25-30:</strong> Complete Mother's loan payoff</li>
+                    <li><strong>Month 31-36:</strong> Complete remaining debts (Kuya JP, Atome, Shopee)</li>
+                    <li><strong>By Month 36:</strong> Only PagIBIG and essential services remain</li>
+                    <li><strong>Begin:</strong> Building 3-6 month emergency fund</li>
+                </ul>
+            </div>
+
+            <div class="card" style="margin-bottom: 20px;">
+                <h3>✅ Key Milestones</h3>
+                <div class="milestone upcoming">
+                    <div class="milestone-date">Month 1-3</div>
+                    <div class="milestone-text">Accumulate ₱50,000 for PagIBIG backlog</div>
+                </div>
+                <div class="milestone upcoming">
+                    <div class="milestone-date">Month 4</div>
+                    <div class="milestone-text">Pay PagIBIG backlog - REMOVE FORECLOSURE RISK ✓</div>
+                </div>
+                <div class="milestone upcoming">
+                    <div class="milestone-date">Month 5-6</div>
+                    <div class="milestone-text">Clear condo dues backlog & maintain current payments</div>
+                </div>
+                <div class="milestone upcoming">
+                    <div class="milestone-date">Month 12</div>
+                    <div class="milestone-text">Complete credit card settlements - Save ₱237,044</div>
+                </div>
+                <div class="milestone upcoming">
+                    <div class="milestone-date">Month 18</div>
+                    <div class="milestone-text">Complete BPI Loans</div>
+                </div>
+                <div class="milestone upcoming">
+                    <div class="milestone-date">Month 24</div>
+                    <div class="milestone-text">Eliminate ₱670k+ in credit card & loan debt</div>
+                </div>
+                <div class="milestone upcoming">
+                    <div class="milestone-date">Month 30</div>
+                    <div class="milestone-text">Complete Mother's loan (interest-free)</div>
+                </div>
+                <div class="milestone upcoming">
+                    <div class="milestone-date">Month 36</div>
+                    <div class="milestone-text">Debt-free except PagIBIG - Begin emergency fund</div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 20px;">
+                <h3>💡 Critical Success Factors</h3>
+                <ol style="color: #a0a0a0; font-size: 13px; line-height: 1.8;">
+                    <li><strong>Do not miss PagIBIG payments:</strong> This is the foundation. Foreclosure = loss of all assets.</li>
+                    <li><strong>Negotiate aggressively:</strong> Settlement offers prove creditors will negotiate. Push for better terms.</li>
+                    <li><strong>Protect rental income:</strong> Do not spend condo/parking rental income on anything except critical priorities.</li>
+                    <li><strong>No new debt:</strong> Do not apply for new credit cards, loans, or financing.</li>
+                    <li><strong>Monthly discipline:</strong> Stick to the ₱59,000 income. No lifestyle increases.</li>
+                    <li><strong>Maintain communication:</strong> Regular contact with creditors shows good faith and reduces legal action likelihood.</li>
+                </ol>
+            </div>
+
+            <div class="alert alert-success">
+                <strong>✓ HOPE:</strong> This plan is aggressive but realistic. With discipline, you can be substantially debt-free within 36 months. The settlement offers alone will save ₱237,044. Rental income provides stability. The key is to execute the priorities in order and not deviate.
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Navigation
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                
+                btn.classList.add('active');
+                const sectionId = btn.getAttribute('data-section');
+                document.getElementById(sectionId).classList.add('active');
+            });
+        });
+
+        // Export to PDF
+        function exportToPDF() {
+            const element = document.querySelector('.container');
+            const opt = {
+                margin: 10,
+                filename: 'Financial_Recovery_System.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+            };
+            html2pdf().set(opt).save().from(element).save();
+        }
+
+        // Charts
+        const ctx1 = document.getElementById('incomeVsObligationsChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: ['Income', 'Living Expenses', 'Critical Bills', 'Total Obligations'],
+                datasets: [{
+                    label: 'Amount (PHP)',
+                    data: [59000, 5460, 89658, 95118],
+                    backgroundColor: ['#34c759', '#ff9500', '#ff3b30', '#ff3b30'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: '#a0a0a0' },
+                        grid: { color: '#2a2f4a' }
+                    },
+                    x: {
+                        ticks: { color: '#a0a0a0' },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        const ctx2 = document.getElementById('debtDistributionChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['BPI CC', 'BDO CC', 'Mother', 'BPI Loans', 'Other'],
+                datasets: [{
+                    data: [545220, 125713, 486184, 183359, 113037],
+                    backgroundColor: ['#ff3b30', '#ff9500', '#34c759', '#0071e3', '#00d4ff']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: { color: '#a0a0a0' }
+                    }
+                }
+            }
+        });
+
+        const ctx3 = document.getElementById('cashFlowChart').getContext('2d');
+        new Chart(ctx3, {
+            type: 'line',
+            data: {
+                labels: ['Day 1', 'Day 5', 'Day 10', 'Day 15', 'Day 20', 'Day 25', 'Day 30'],
+                datasets: [{
+                    label: 'Cash Balance',
+                    data: [5000, 8000, 12000, 42000, 35000, 28000, 15000],
+                    borderColor: '#0071e3',
+                    backgroundColor: 'rgba(0, 113, 227, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#0071e3'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: { color: '#a0a0a0' }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: { color: '#a0a0a0' },
+                        grid: { color: '#2a2f4a' }
+                    },
+                    x: {
+                        ticks: { color: '#a0a0a0' },
+                        grid: { color: '#2a2f4a' }
+                    }
+                }
+            }
+        });
+
+        const ctx4 = document.getElementById('debtForecastChart').getContext('2d');
+        new Chart(ctx4, {
+            type: 'line',
+            data: {
+                labels: ['Month 0', 'Month 6', 'Month 12', 'Month 18', 'Month 24', 'Month 30', 'Month 36'],
+                datasets: [{
+                    label: 'Total Debt',
+                    data: [1253513, 1000000, 550000, 350000, 200000, 100000, 0],
+                    borderColor: '#ff3b30',
+                    backgroundColor: 'rgba(255, 59, 48, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#ff3b30'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: { color: '#a0a0a0' }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: { color: '#a0a0a0' },
+                        grid: { color: '#2a2f4a' }
+                    },
+                    x: {
+                        ticks: { color: '#a0a0a0' },
+                        grid: { color: '#2a2f4a' }
+                    }
+                }
+            }
+        });
+
+        const ctx5 = document.getElementById('payoffTimelineChart').getContext('2d');
+        new Chart(ctx5, {
+            type: 'bar',
+            data: {
+                labels: ['DITO', 'Atome', 'Shopee', 'BPI L1', 'BPI L2', 'Globe', 'Kuya JP', 'Mother'],
+                datasets: [{
+                    label: 'Months to Payoff',
+                    data: [2, 6, 8, 5, 23, 8, 27, 36],
+                    backgroundColor: '#0071e3',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#a0a0a0' },
+                        grid: { color: '#2a2f4a' }
+                    },
+                    y: {
+                        ticks: { color: '#a0a0a0' }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
